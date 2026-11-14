@@ -4,14 +4,14 @@ const GAME = {
   levelOf: (xp) => Math.floor(Math.sqrt(xp / 50)) + 1, // Lv2 at 50 XP, Lv3 at 200, Lv4 at 450...
   xpForLevel: (lvl) => 50 * (lvl - 1) ** 2,
   BADGES: [
-    ["first", "First Step", "Complete 1 challenge", (s) => s.count >= 1],
-    ["ten", "Warming Up", "Complete 10 challenges", (s) => s.count >= 10],
+    ["first", "First step", "Complete 1 challenge", (s) => s.count >= 1],
+    ["ten", "Warming up", "Complete 10 challenges", (s) => s.count >= 10],
     ["fifty", "Committed", "Complete 50 challenges", (s) => s.count >= 50],
     ["hundred", "Centurion", "Complete 100 challenges", (s) => s.count >= 100],
-    ["streak3", "On Fire", "3-day streak", (s) => s.streak >= 3],
-    ["streak7", "Week Warrior", "7-day streak", (s) => s.streak >= 7],
+    ["streak3", "On fire", "3-day streak", (s) => s.streak >= 3],
+    ["streak7", "Week warrior", "7-day streak", (s) => s.streak >= 7],
     ["streak30", "Unstoppable", "30-day streak", (s) => s.streak >= 30],
-    ["daily10", "Binge Coder", "10 challenges in one day", (s) => s.todayCount >= 10],
+    ["daily10", "Binge coder", "10 challenges in one day", (s) => s.todayCount >= 10],
   ],
   empty: () => ({ xp: 0, count: 0, streak: 0, bestStreak: 0, lastDay: null, todayCount: 0, done: {}, badges: [] }),
 
