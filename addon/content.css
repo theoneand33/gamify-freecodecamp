@@ -1,22 +1,23 @@
 .gfcc-hud, .gfcc-toasts {
-  position: fixed; z-index: 2147483647; left: 12px; pointer-events: none;
-  font: 500 13px/20px system-ui, sans-serif; color: #f5f6f7;
+  position: fixed; z-index: 2147483647; left: 12px;
+  font: 400 13px/20px system-ui, sans-serif; color: #d0d0d5;
 }
 .gfcc-hud, .gfcc-toast {
-  background: #0a0a23; border: 1px solid rgba(245, 246, 247, 0.1); border-radius: 8px;
+  background: #0a0a23; border: 1px solid rgba(245, 246, 247, 0.08); border-radius: 12px;
 }
-.gfcc-hud { bottom: 12px; padding: 8px 12px; opacity: 0.92; }
-.gfcc-row { display: flex; align-items: center; gap: 12px; }
-.gfcc-num { font-family: ui-monospace, "Hack", monospace; font-variant-numeric: tabular-nums; color: #d0d0d5; }
-.gfcc-streak { display: inline-flex; align-items: center; gap: 4px; }
-.gfcc-bar { height: 4px; margin-top: 8px; background: #3b3b4f; border-radius: 2px; overflow: hidden; }
-.gfcc-bar::after { content: ""; display: block; height: 100%; width: var(--p); background: #f1be32; }
-.gfcc-toasts { bottom: 68px; display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 8px; }
+.gfcc-hud { bottom: 12px; display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px 0 4px; box-sizing: border-box; }
+.gfcc-num { font-family: ui-monospace, "Hack", monospace; font-variant-numeric: tabular-nums; }
+.gfcc-sep { width: 1px; height: 16px; background: rgba(245, 246, 247, 0.08); }
+.gfcc-streak { display: inline-flex; align-items: center; gap: 4px; color: #f5f6f7; }
+.gfcc-streak svg { color: #f1be32; }
+.gfcc-toasts { pointer-events: none; bottom: 64px; display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 8px; }
 .gfcc-toast {
-  padding: 8px 12px; color: #f1be32;
-  font: 400 13px/20px ui-monospace, "Hack", monospace; font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; gap: 12px; padding: 8px 16px 8px 8px; color: #f5f6f7;
   animation: gfcc-in 3.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+.gfcc-toast small { display: block; font-size: 12px; line-height: 16px; color: #858591; }
+.gfcc-toast.xp { padding-left: 16px; color: #f1be32; font-size: 16px; }
+.gfcc-toast.plain { padding-left: 12px; gap: 8px; }
 @keyframes gfcc-in {
   0% { opacity: 0; transform: translateY(8px); } 10%, 88% { opacity: 1; transform: none; } 100% { opacity: 0; }
 }

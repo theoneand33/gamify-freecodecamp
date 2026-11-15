@@ -9,8 +9,8 @@
   "content_scripts": [
     {
       "matches": ["https://www.freecodecamp.org/*"],
-      "js": ["game.js", "content.js"],
-      "css": ["content.css"]
+      "js": ["game.js", "ui.js", "content.js"],
+      "css": ["ui.css", "content.css"]
     }
   ],
   "browser_specific_settings": {
