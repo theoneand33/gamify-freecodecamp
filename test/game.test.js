@@ -30,3 +30,6 @@ r = G.award(s, "/c", "2026-05-02"); assert.equal(r.state.freezes, 2, "freeze cap
 r = G.award(s, "/m", "2026-05-04"); assert.equal(r.freezesUsed, 2); assert.deepEqual(r.state.frozen, ["2026-05-02", "2026-05-03"]);
 r = G.award(s, "/r", "2026-05-05"); assert.equal(r.state.streak, 1, "gap > freezes resets"); assert.equal(r.state.freezes, 2);
 console.log("ok freezes");
+const UI = require("../addon/ui.js");
+for (const [id] of G.BADGES) assert.ok(UI.PATHS[UI.BADGE_ICON[id]], "badge icon missing: " + id);
+console.log("ok badge icons");

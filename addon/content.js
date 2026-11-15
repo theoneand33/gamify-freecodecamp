@@ -3,18 +3,8 @@
 const DONE_TEXT = /go to next (challenge|step)|submit and continue/i;
 const today = () => new Date().toLocaleDateString("en-CA"); // local YYYY-MM-DD
 
-// Build the panel once, then only update text.
-const el = (tag, cls) => Object.assign(document.createElement(tag), { className: cls });
-const hud = el("div", "gfcc-hud"), row = el("div", "gfcc-row"), bar = el("div", "gfcc-bar");
-const lvlEl = el("span", ""), xpEl = el("span", "gfcc-num"), streakEl = el("span", "gfcc-num gfcc-streak"), streakNum = el("span", ""), goalEl = el("span", "gfcc-num");
-// lucide "flame", 1.5 stroke
-const SVG = "http://www.w3.org/2000/svg", flame = document.createElementNS(SVG, "svg"), path = document.createElementNS(SVG, "path");
-for (const [k, v] of Object.entries({ viewBox: "0 0 24 24", width: 14, height: 14, fill: "none", stroke: "currentColor", "stroke-width": 1.5, "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true" })) flame.setAttribute(k, v);
-path.setAttribute("d", "M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z");
-flame.append(path);
-streakEl.append(flame, streakNum);
-row.append(lvlEl, xpEl, streakEl, goalEl);
-hud.append(row, bar);
+const el = (tag, cls, text) => Object.assign(document.createElement(tag), { className: cls || "", textContent: text ?? "" });
+const hud = el("div", "gfcc-hud");
 const toasts = el("div", "gfcc-toasts");
 toasts.setAttribute("role", "status");
 document.documentElement.append(hud, toasts);
@@ -22,20 +12,25 @@ document.documentElement.append(hud, toasts);
 function render(s) {
   const lvl = GAME.levelOf(s.xp);
   const lo = GAME.xpForLevel(lvl), hi = GAME.xpForLevel(lvl + 1);
-  lvlEl.textContent = `Level ${lvl}`;
-  xpEl.textContent = `${s.xp} XP`;
-  streakNum.textContent = GAME.liveStreak(s, today());
-  streakEl.title = `Day streak, ${s.freezes} freeze${s.freezes === 1 ? "" : "s"} left`;
-  goalEl.textContent = `${Math.min(GAME.todayXp(s, today()), GAME.GOAL_XP)}/${GAME.GOAL_XP}`;
-  goalEl.title = "Daily goal (XP today)";
-  bar.style.setProperty("--p", Math.round(((s.xp - lo) / (hi - lo)) * 100) + "%");
-  hud.title = `${hi - s.xp} XP to level ${lvl + 1}`;
+  const goal = Math.min(GAME.todayXp(s, today()), GAME.GOAL_XP);
+  const streak = el("span", "gfcc-num gfcc-streak", GAME.liveStreak(s, today()));
+  streak.prepend(UI.icon("flame", 14));
+  streak.title = `Day streak, ${s.freezes} freeze${s.freezes === 1 ? "" : "s"} left`;
+  hud.replaceChildren(UI.ring(32, (s.xp - lo) / (hi - lo), goal / GAME.GOAL_XP, lvl), el("span", "gfcc-num", `${s.xp.toLocaleString("en-US")} XP`), el("span", "gfcc-sep"), streak);
+  hud.title = `${hi - s.xp} XP to level ${lvl + 1}, ${goal}/${GAME.GOAL_XP} XP today`;
 }
 
-function toast(text) {
-  const t = document.createElement("div");
-  t.className = "gfcc-toast";
-  t.textContent = "// " + text;
+// kind: "xp" | "badge" | "plain". Badges get a medal and the badge name.
+function toast(text, kind = "plain", icon = "check", badgeId) {
+  const t = el("div", "gfcc-toast " + kind);
+  if (kind === "badge") {
+    const d = el("div", "", text);
+    d.prepend(el("small", "", "Badge earned"));
+    t.append(UI.medal(badgeId, 16, 32), d);
+  } else {
+    if (kind === "plain") t.append(UI.icon(icon));
+    t.append(text);
+  }
   toasts.append(t);
   setTimeout(() => t.remove(), 3500);
 }
@@ -53,12 +48,12 @@ async function check() {
   if (!r) return;
   await browser.storage.local.set({ state: r.state });
   render(r.state);
-  toast(`+${r.gained} XP`);
-  if (r.freezesUsed) toast(`streak saved, ${r.freezesUsed} freeze${r.freezesUsed > 1 ? "s" : ""} used`);
-  if (r.goalMet) toast("daily goal complete");
-  if (r.freezeEarned) toast("streak freeze earned");
-  if (r.leveledUp) toast(`level ${GAME.levelOf(r.state.xp)} reached`);
-  for (const [, name, desc] of r.newBadges) toast(`badge earned: ${name}, ${desc.toLowerCase()}`);
+  toast(`+${r.gained} XP`, "xp");
+  if (r.freezesUsed) toast(`Streak saved, ${r.freezesUsed} freeze${r.freezesUsed > 1 ? "s" : ""} used`, "plain", "snow");
+  if (r.goalMet) toast("Daily goal complete");
+  if (r.freezeEarned) toast("Streak freeze earned", "plain", "snow");
+  if (r.leveledUp) toast(`Level ${GAME.levelOf(r.state.xp)} reached`, "plain", "trend");
+  for (const [id, name] of r.newBadges) toast(name, "badge", "", id);
 }
 
 new MutationObserver(() => {

@@ -2,28 +2,36 @@
 <html>
 <head>
 <meta charset="utf-8">
+<link rel="stylesheet" href="ui.css">
 <style>
-  body { width: 280px; margin: 0; padding: 16px; font: 400 14px/20px system-ui, sans-serif; background: #0a0a23; color: #f5f6f7; }
-  h1 { font-size: 20px; line-height: 28px; font-weight: 500; margin: 0; }
-  h2 { font-size: 14px; font-weight: 500; margin: 0 0 8px; }
-  .num { font-family: ui-monospace, "Hack", monospace; font-variant-numeric: tabular-nums; }
-  .bar { height: 8px; background: #3b3b4f; border-radius: 4px; overflow: hidden; margin: 8px 0 4px; }
-  .bar div { height: 100%; background: #f1be32; }
-  .muted { color: #a8a8b8; font-size: 12px; line-height: 16px; }
-  dl { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; margin: 16px 0 24px; color: #a8a8b8; }
-  dd { margin: 0; color: #f5f6f7; text-align: right; }
+  body { width: 320px; margin: 0; padding: 20px; box-sizing: border-box; font: 400 14px/20px system-ui, sans-serif; background: #0a0a23; color: #f5f6f7; }
   ul { list-style: none; padding: 0; margin: 0; }
-  li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid rgba(245, 246, 247, 0.08); }
-  li small { margin-left: auto; color: #858591; font-size: 12px; }
-  li.locked { color: #858591; }
-  .dot { flex: none; width: 8px; height: 8px; border-radius: 4px; background: #f1be32; }
-  .locked .dot { background: none; box-shadow: inset 0 0 0 1px #5a5a6e; }
-  #week { display: flex; justify-content: space-between; margin: 16px 0 0; }
-  #week li { flex-direction: column; gap: 4px; padding: 0; border: 0; font-size: 12px; line-height: 16px; color: #858591; }
-  #week li::after { content: ""; width: 24px; height: 24px; border-radius: 12px; box-shadow: inset 0 0 0 1px #5a5a6e; }
-  #week .done::after { background: #f1be32; box-shadow: none; }
-  #week .frozen::after { background: #99c9ff; box-shadow: none; }
+  .num { font-family: ui-monospace, "Hack", monospace; font-variant-numeric: tabular-nums; }
+  #top { display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: center; }
+  #keys { display: grid; gap: 8px; font-size: 13px; color: #d0d0d5; }
+  #keys div { display: flex; align-items: center; gap: 8px; }
+  #keys i { flex: none; width: 8px; height: 8px; border-radius: 4px; }
+  #keys b { font-weight: 500; color: #f5f6f7; }
+  #streak { margin-top: 20px; padding: 12px; background: #1b1b32; border-radius: 12px; }
+  .row { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  .row > svg { color: #f1be32; }
+  #pips { margin-left: auto; display: flex; gap: 4px; color: #6e6e85; }
+  #pips .on { color: #99c9ff; }
+  #week { display: grid; grid-template-columns: repeat(7, 1fr); margin-top: 12px; text-align: center; font-size: 12px; line-height: 16px; color: #858591; }
+  #week li { display: grid; justify-items: center; gap: 4px; }
+  #week i { width: 24px; height: 24px; border-radius: 12px; box-shadow: inset 0 0 0 1px #6e6e85; }
+  #week .done i { background: #f1be32; box-shadow: none; }
+  #week .frozen i { background: #99c9ff; box-shadow: none; }
   #week .today { color: #f5f6f7; }
+  #stats { margin: 12px 0 0; font-size: 12px; line-height: 16px; color: #858591; }
+  .head { display: flex; justify-content: space-between; margin-top: 20px; font-weight: 500; }
+  .head span:last-child { font-size: 12px; font-weight: 400; color: #858591; }
+  #badges { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; margin-top: 12px; }
+  #badges li { display: grid; justify-items: center; align-content: start; gap: 8px; padding: 4px 0; border-radius: 8px; font-size: 12px; line-height: 16px; text-align: center; color: #d0d0d5; }
+  #badges li.off { color: #858591; }
+  #badges li:focus-visible { outline: 2px solid #f1be32; }
+  #cap { margin-top: 12px; padding: 8px 12px; min-height: 52px; box-sizing: border-box; background: #1b1b32; border-radius: 8px; font-size: 12px; line-height: 16px; color: #858591; }
+  #cap b { display: block; font-size: 13px; line-height: 20px; font-weight: 500; color: #f5f6f7; }
   button {
     margin-top: 16px; padding: 4px 12px; font: inherit; font-size: 12px; line-height: 20px;
     background: none; color: #a8a8b8; border: 1px solid rgba(245, 246, 247, 0.12); border-radius: 6px; cursor: pointer;
@@ -35,23 +43,18 @@
 </style>
 </head>
 <body>
-  <h1 id="level"></h1>
-  <div class="bar"><div id="bar"></div></div>
-  <div class="muted num" id="next"></div>
-  <h2 style="margin-top:16px">Daily goal <span class="num muted" id="goal"></span></h2>
-  <div class="bar"><div id="goalbar"></div></div>
-  <ul id="week"></ul>
-  <dl>
-    <dt>Total XP</dt><dd class="num" id="xp"></dd>
-    <dt>Challenges</dt><dd class="num" id="count"></dd>
-    <dt>Streak</dt><dd class="num" id="streak"></dd>
-    <dt>Streak freezes</dt><dd class="num" id="freezes"></dd>
-    <dt>Best streak</dt><dd class="num" id="best"></dd>
-  </dl>
-  <h2>Badges</h2>
+  <div id="top"></div>
+  <div id="streak">
+    <div class="row" id="streakrow"></div>
+    <ul id="week"></ul>
+    <p id="stats" class="num"></p>
+  </div>
+  <div class="head"><span>Badges</span><span class="num" id="count"></span></div>
   <ul id="badges"></ul>
+  <div id="cap"></div>
   <button id="reset">Reset progress</button>
   <script src="game.js"></script>
+  <script src="ui.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
