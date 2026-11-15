@@ -9,20 +9,60 @@ const toasts = el("div", "gfcc-toasts");
 toasts.setAttribute("role", "status");
 document.documentElement.append(hud, toasts);
 
+const EASE = "cubic-bezier(0.23, 1, 0.32, 1)";
+const fmt = (xp) => `${xp.toLocaleString("en-US")} XP`;
+
 function render(s) {
   const lvl = GAME.levelOf(s.xp);
   const lo = GAME.xpForLevel(lvl), hi = GAME.xpForLevel(lvl + 1);
   const goal = Math.min(GAME.todayXp(s, today()), GAME.GOAL_XP);
-  const streak = el("span", "gfcc-num gfcc-streak", GAME.liveStreak(s, today()));
+  const days = GAME.liveStreak(s, today());
+  const key = [s.xp, goal, days, s.freezes].join();
+  if (key === hud.dataset.k) return; // onChanged echoes our own write; rebuilding would cut the animation short
+  const prevXp = hud.dataset.k ? Number(hud.dataset.xp) : null;
+  const prevDash = {};
+  for (const c of hud.querySelectorAll("circle")) prevDash[c.getAttribute("r")] = parseFloat(c.getAttribute("stroke-dasharray"));
+  Object.assign(hud.dataset, { k: key, xp: s.xp });
+  const streak = el("span", "gfcc-num gfcc-streak", days);
   streak.prepend(UI.icon("flame", 14));
   streak.title = `Day streak, ${s.freezes} freeze${s.freezes === 1 ? "" : "s"} left`;
-  hud.replaceChildren(UI.ring(32, (s.xp - lo) / (hi - lo), goal / GAME.GOAL_XP, lvl), el("span", "gfcc-num", `${s.xp.toLocaleString("en-US")} XP`), el("span", "gfcc-sep"), streak);
+  const xpEl = el("span", "gfcc-num", fmt(s.xp));
+  hud.replaceChildren(UI.ring(32, (s.xp - lo) / (hi - lo), goal / GAME.GOAL_XP, lvl), xpEl, el("span", "gfcc-sep"), streak);
   hud.title = `${hi - s.xp} XP to level ${lvl + 1}, ${goal}/${GAME.GOAL_XP} XP today`;
+  if (prevXp !== null && s.xp > prevXp) celebrate(prevDash, xpEl, prevXp, s.xp);
 }
 
-// kind: "xp" | "badge" | "plain". Badges get a medal and the badge name.
+// XP gained: pop the HUD, fill the rings from their old length, count the number up.
+function celebrate(prevDash, xpEl, from, to) {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const base = "rgba(245, 246, 247, 0.08)", gold = "#f1be32";
+  hud.animate(reduce
+    ? [{ borderColor: gold }, { borderColor: base }]
+    : [{ transform: "scale(1)", borderColor: base, easing: EASE }, { transform: "scale(1.08)", borderColor: gold, offset: 0.3, easing: EASE }, { transform: "scale(1)", borderColor: base }],
+  { duration: 700 });
+  for (const c of hud.querySelectorAll("circle")) {
+    if (c.getAttribute("stroke") === "#2a2a40") continue; // track, not progress
+    const to = c.getAttribute("stroke-dasharray"), [dash, len] = to.split(" ").map(Number);
+    const prev = prevDash[c.getAttribute("r")] ?? 0;
+    if (prev !== dash) c.animate([{ strokeDasharray: `${prev < dash ? prev : 0} ${len}` }, { strokeDasharray: to }], { duration: 700, easing: EASE }); // level-up wraps: fill from empty
+  }
+  if (reduce) return;
+  const t0 = performance.now();
+  const tick = (t) => {
+    const p = Math.min((t - t0) / 700, 1);
+    xpEl.textContent = fmt(Math.round(from + (to - from) * (1 - (1 - p) ** 3)));
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// kind: "badge" | "plain". Badges get a medal and the badge name.
+let burst = 0; // toasts fired in the same tick stagger in, bottom first
 function toast(text, kind = "plain", icon = "check", badgeId) {
   const t = el("div", "gfcc-toast " + kind);
+  const delay = 80 * burst++;
+  if (burst === 1) queueMicrotask(() => (burst = 0));
+  t.style.animationDelay = delay + "ms";
   if (kind === "badge") {
     const d = el("div", "", text);
     d.prepend(el("small", "", "Badge earned"));
@@ -32,7 +72,7 @@ function toast(text, kind = "plain", icon = "check", badgeId) {
     t.append(text);
   }
   toasts.append(t);
-  setTimeout(() => t.remove(), 3500);
+  setTimeout(() => t.remove(), 3500 + delay);
 }
 
 async function load() {

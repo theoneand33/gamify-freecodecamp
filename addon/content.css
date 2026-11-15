@@ -5,7 +5,7 @@
 .gfcc-hud, .gfcc-toast {
   background: #0a0a23; border: 1px solid rgba(245, 246, 247, 0.08); border-radius: 12px;
 }
-.gfcc-hud { bottom: 12px; display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px 0 4px; box-sizing: border-box; }
+.gfcc-hud { bottom: 12px; transform-origin: bottom left; display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px 0 4px; box-sizing: border-box; }
 .gfcc-num { font-family: ui-monospace, "Hack", monospace; font-variant-numeric: tabular-nums; }
 .gfcc-sep { width: 1px; height: 16px; background: rgba(245, 246, 247, 0.08); }
 .gfcc-streak { display: inline-flex; align-items: center; gap: 4px; color: #f5f6f7; }
@@ -13,12 +13,15 @@
 .gfcc-toasts { pointer-events: none; bottom: 64px; display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 8px; }
 .gfcc-toast {
   display: flex; align-items: center; gap: 12px; padding: 8px 16px 8px 8px; color: #f5f6f7;
-  animation: gfcc-in 3.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform-origin: bottom left; animation: gfcc-toast 3.5s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 .gfcc-toast small { display: block; font-size: 12px; line-height: 16px; color: #858591; }
-.gfcc-toast.xp { padding-left: 16px; color: #f1be32; font-size: 16px; }
 .gfcc-toast.plain { padding-left: 12px; gap: 8px; }
-@keyframes gfcc-in {
-  0% { opacity: 0; transform: translateY(8px); } 10%, 88% { opacity: 1; transform: none; } 100% { opacity: 0; }
+/* 3.5s total: ~280ms in, hold, ~350ms out the way it came */
+@keyframes gfcc-toast {
+  0% { opacity: 0; transform: translateY(16px) scale(0.95); }
+  8%, 90% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(8px) scale(0.98); }
 }
-@media (prefers-reduced-motion: reduce) { .gfcc-toast { animation: none; } }
+@keyframes gfcc-fade { 0%, 100% { opacity: 0; } 8%, 90% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .gfcc-toast { animation-name: gfcc-fade; } }
