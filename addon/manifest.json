@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Gamify freeCodeCamp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Earn XP, levels, streaks and badges for every freeCodeCamp challenge you complete.",
   "icons": { "64": "icon.svg" },
   "permissions": ["storage"],
