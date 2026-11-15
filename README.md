@@ -2,8 +2,6 @@
 
 # gamify-freecodecamp
 
-Created in [T3 Code](https://t3.codes).
-
 A Firefox add-on that gives you XP, levels, daily streaks and badges for freeCodeCamp challenges.
 
 ## Install (development)
