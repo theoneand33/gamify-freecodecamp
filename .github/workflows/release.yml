@@ -15,13 +15,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check tag matches manifest version
+      - name: Set manifest version from tag
         run: |
-          v=$(node -p 'require("./addon/manifest.json").version')
-          [ "v$v" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME != manifest v$v"; exit 1; }
+          sed -i -E "s/(\"version\": \")[^\"]*/\1${GITHUB_REF_NAME#v}/" addon/manifest.json
       - run: node test/game.test.js
       - run: npx --yes web-ext@8 lint -s addon
       - run: npx --yes web-ext@8 build -s addon -a dist
       - run: gh release create "$GITHUB_REF_NAME" dist/*.zip --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Commit version to main if it was wrong
+        run: |
+          git fetch origin main
+          git checkout -f FETCH_HEAD
+          sed -i -E "s/(\"version\": \")[^\"]*/\1${GITHUB_REF_NAME#v}/" addon/manifest.json
+          git diff --quiet && exit 0
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -am "chore: set manifest version to ${GITHUB_REF_NAME#v}"
+          git push origin HEAD:main
