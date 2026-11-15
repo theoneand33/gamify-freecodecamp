@@ -90,6 +90,8 @@ async function check() {
   if (!r) return;
   await browser.storage.local.set({ state: r.state });
   show(r.state);
+  new Audio(browser.runtime.getURL("success.ogg")).play().catch(() => {}); // autoplay can be blocked; sound is optional
+  toast(`+${r.gained} XP`, "xp");
   if (r.freezesUsed) toast(`Streak saved, ${r.freezesUsed} freeze${r.freezesUsed > 1 ? "s" : ""} used`, "plain", "snow");
   if (r.goalMet) toast("Daily goal complete");
   if (r.freezeEarned) toast("Streak freeze earned", "plain", "snow");

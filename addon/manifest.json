@@ -13,6 +13,7 @@
       "css": ["ui.css", "content.css"]
     }
   ],
+  "web_accessible_resources": [{ "resources": ["success.ogg"], "matches": ["https://www.freecodecamp.org/*"] }],
   "browser_specific_settings": {
     "gecko": {
       "id": "gamify-freecodecamp@example.org",
