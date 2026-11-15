@@ -15,6 +15,8 @@ A Firefox add-on that gives you XP, levels, daily streaks and badges for freeCod
 ## Rules
 
 - 10 XP per challenge, +2 per streak day (max +10). Each challenge pays out once.
+- Daily goal: 30 XP. The HUD shows today's progress; the popup shows the last 7 days.
+- Streak freezes: every 7th streak day earns one (hold up to 2). A missed day spends one instead of breaking the streak.
 - Level N starts at 50·(N−1)² XP.
 - Progress lives in `browser.storage.local`. Nothing leaves your browser.
 
