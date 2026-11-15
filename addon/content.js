@@ -39,15 +39,17 @@ async function load() {
   return GAME.load((await browser.storage.local.get("state")).state);
 }
 
-let busy = false;
+let busy = false, state = null; // state: in-memory copy, kept fresh by load() and onChanged
 async function check() {
   busy = false;
+  const path = location.pathname.replace(/\/$/, "");
+  if (!state || state.done[path]) return; // skip the DOM scan and storage read on already-rewarded pages
   const passed = [...document.querySelectorAll("button")].some((b) => DONE_TEXT.test(b.textContent));
   if (!passed) return;
-  const r = GAME.award(await load(), location.pathname.replace(/\/$/, ""), today());
+  const r = GAME.award(await load(), path, today()); // re-read storage: another tab may have awarded
   if (!r) return;
   await browser.storage.local.set({ state: r.state });
-  render(r.state);
+  show(r.state);
   toast(`+${r.gained} XP`, "xp");
   if (r.freezesUsed) toast(`Streak saved, ${r.freezesUsed} freeze${r.freezesUsed > 1 ? "s" : ""} used`, "plain", "snow");
   if (r.goalMet) toast("Daily goal complete");
@@ -60,5 +62,6 @@ new MutationObserver(() => {
   if (!busy) { busy = true; setTimeout(check, 400); } // debounce DOM churn
 }).observe(document.documentElement, { childList: true, subtree: true });
 
-load().then(render);
-browser.storage.onChanged.addListener((c) => c.state && render(GAME.load(c.state.newValue))); // sync across tabs
+const show = (s) => render((state = s));
+load().then(show);
+browser.storage.onChanged.addListener((c) => c.state && show(GAME.load(c.state.newValue))); // sync across tabs
