@@ -1,0 +1,27 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check tag matches manifest version
+        run: |
+          v=$(node -p 'require("./addon/manifest.json").version')
+          [ "v$v" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME != manifest v$v"; exit 1; }
+      - run: node test/game.test.js
+      - run: npx --yes web-ext@8 lint -s addon
+      - run: npx --yes web-ext@8 build -s addon -a dist
+      - run: gh release create "$GITHUB_REF_NAME" dist/*.zip --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

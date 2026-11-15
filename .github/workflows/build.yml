@@ -1,0 +1,22 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node test/game.test.js
+      - run: npx --yes web-ext@8 lint -s addon
+      - run: npx --yes web-ext@8 build -s addon -a dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: addon
+          path: dist/*.zip
